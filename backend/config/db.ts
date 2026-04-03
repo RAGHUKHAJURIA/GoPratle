@@ -15,7 +15,7 @@ const connectDB = async (): Promise<void> => {
 
   if (!process.env.MONGO_URI) {
     console.error("MONGO_URI is not defined in environment variables");
-    return;
+    throw new Error("MONGO_URI is not defined in environment variables");
   }
 
   try {

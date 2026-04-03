@@ -11,8 +11,20 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 
-
-connectDB();
+// Ensure Database is connected before handling requests
+app.use(async (req: Request, res: Response, next: express.NextFunction) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error: any) {
+    console.error("Error in DB connection middleware:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Database connection error",
+      error: error.message
+    });
+  }
+});
 
 // Routes
 app.use("/api/requirements", requirementRoutes);
