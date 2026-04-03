@@ -42,12 +42,14 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 
+    (process.env.NODE_ENV === "development" ? "http://localhost:8080" : "https://go-pratle-eight.vercel.app");
+
   const submitRequirement = async (data: RequirementPayload) => {
     setIsLoading(true);
     setError(null);
     try {
-      
-      await axios.post("http://localhost:8080/api/requirements", data);
+      await axios.post(`${API_URL}/api/requirements`, data);
       setIsLoading(false);
       return true;
     } catch (err: any) {
