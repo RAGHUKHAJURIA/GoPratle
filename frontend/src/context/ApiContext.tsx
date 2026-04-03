@@ -53,7 +53,10 @@ export const ApiProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(false);
       return true;
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to submit requirement");
+      const errorMessage = err.response?.data?.error 
+        ? `${err.response?.data?.message}: ${err.response?.data?.error}`
+        : err.response?.data?.message || "Failed to submit requirement";
+      setError(errorMessage);
       setIsLoading(false);
       return false;
     }
