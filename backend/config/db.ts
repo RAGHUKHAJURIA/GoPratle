@@ -2,30 +2,38 @@ import mongoose from "mongoose";
 
 const isDev = process.env.NODE_ENV !== "production";
 
+let cached = (global as any).mongoose;
+
+if (!cached) {
+  cached = (global as any).mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async (): Promise<void> => {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!process.env.MONGO_URI) {
+    console.error("MONGO_URI is not defined in environment variables");
+    return;
+  }
+
   try {
-    if (!process.env.MONGO_URI) {
-      throw new Error("MONGO_URI is not defined in environment variables");
+    if (!cached.promise) {
+      cached.promise = mongoose.connect(process.env.MONGO_URI, {
+        autoIndex: isDev,
+      }).then((m) => {
+        console.log(`MongoDB Connected`);
+        return m;
+      });
     }
-
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      autoIndex: isDev,
-    });
-
-    console.log(`MongoDB Connected`);
-
-    mongoose.connection.on("disconnected", () => {
-      console.warn("MongoDB disconnected");
-    });
-
-    mongoose.connection.on("reconnected", () => {
-      console.log("MongoDB reconnected");
-    });
+    cached.conn = await cached.promise;
   } catch (error) {
     if (error instanceof Error) {
       console.error("MongoDB connection failed:", error.message);
     }
-    process.exit(1);
+    cached.promise = null; 
+    throw error;
   }
 };
 
